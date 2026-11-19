@@ -1,0 +1,33 @@
+{% extends 'prediksi/base.html' %}
+{% block title %}Prediksi | DAYAKU{% endblock %}
+{% block page_heading %}Prediksi Energi dan Biaya{% endblock %}
+{% block content %}
+<div class="page-intro"><span class="eyebrow">PREDICTION TOOL</span><h1>Hitung Estimasi Pengisian Daya</h1><p>Lengkapi informasi baterai, perjalanan, dan durasi pengisian untuk memperoleh estimasi konsumsi energi serta biaya.</p></div>
+{% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+<div class="panel form-panel">
+ <form method="POST">{% csrf_token %}
+  <h3><span class="form-icon">▣</span> Informasi Baterai</h3>
+  <div class="form-grid">
+   <div class="field"><label>Kapasitas Baterai (kWh)</label><input type="number" name="battery_capacity" min="0.1" step="0.1" required value="{{ nilai_form.battery_capacity|default:'' }}" placeholder="Contoh: 5.5"></div>
+   <div class="field"><label>SOC Awal (%)</label><input type="number" name="initial_soc" min="0" max="99.9" step="0.1" required value="{{ nilai_form.initial_soc|default:'' }}" placeholder="Contoh: 20"></div>
+   <div class="field"><label>SOC Akhir (%)</label><input type="number" name="final_soc" min="0.1" max="100" step="0.1" required value="{{ nilai_form.final_soc|default:'' }}" placeholder="Contoh: 90"></div>
+  </div>
+  <h3><span class="form-icon">⌁</span> Informasi Penggunaan dan Pengisian</h3>
+  <div class="form-grid">
+   <div class="field"><label>Jarak Perjalanan Harian (km)</label><input type="number" name="daily_distance" min="0" step="0.1" required value="{{ nilai_form.daily_distance|default:'' }}" placeholder="Contoh: 35"></div>
+   <div class="field"><label>Suhu Lingkungan (°C)</label><input type="number" name="temperature" step="0.1" required value="{{ nilai_form.temperature|default:'' }}" placeholder="Contoh: 30"></div>
+   <div class="field"><label>Durasi Pengisian (menit)</label><input type="number" name="charging_duration" min="0.1" step="0.1" required value="{{ nilai_form.charging_duration|default:'' }}" placeholder="Contoh: 90"></div>
+  </div>
+  <button type="submit" class="btn-primary submit-button">⚡ Hitung Prediksi Sekarang</button>
+ </form>
+</div>
+{% if hasil %}
+<div class="section-heading"><div><h2>Hasil Prediksi</h2><p>Estimasi dihitung dari model Linear Regression DAYAKU.</p></div><span class="success-pill">✓ Berhasil dihitung</span></div>
+<div class="result-grid">
+ <div class="result-card"><span>Estimasi Konsumsi Energi</span><h2>{{ hasil.energi|floatformat:3 }} <small>kWh</small></h2><p>Perkiraan energi yang digunakan.</p></div>
+ <div class="result-card"><span>Estimasi Biaya Pengisian</span><h2>Rp {{ hasil.biaya|floatformat:0 }}</h2><p>Perkiraan biaya dalam rupiah.</p></div>
+</div>
+<div class="notice">Prediksi berhasil disimpan ke database dan dapat dilihat pada menu Riwayat Prediksi.</div>
+<a href="{% url 'riwayat' %}" class="btn-secondary">Buka Riwayat Prediksi →</a>
+{% endif %}
+{% endblock %}

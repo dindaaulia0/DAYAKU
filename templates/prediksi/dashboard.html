@@ -1,0 +1,651 @@
+{% extends 'prediksi/base.html' %}
+
+{% block title %}Dashboard | DAYAKU{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="welcome">
+    <div class="welcome-content">
+        <span class="eyebrow">WELCOME TO DAYAKU</span>
+
+        <h1>Kenali Energi, Rencanakan Biaya.</h1>
+
+        <p>
+            Platform prediksi konsumsi energi dan estimasi biaya
+            pengisian daya motor listrik berdasarkan karakteristik
+            baterai dan aktivitas penggunaan.
+        </p>
+
+        <a href="{% url 'prediksi' %}" class="btn-primary">
+            Mulai Prediksi <b>→</b>
+        </a>
+    </div>
+
+    <div class="welcome-symbol">⚡</div>
+</div>
+
+
+<!-- STATISTIK -->
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">▤</div>
+        <span>Total Data</span>
+        <h2>{{ jumlah_data|floatformat:0 }}</h2>
+        <small>Catatan dataset</small>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">◈</div>
+        <span>Merek & Model</span>
+        <h2>{{ jumlah_merek }}</h2>
+        <small>Kendaraan tercatat</small>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon cyan">⌖</div>
+        <span>Provinsi</span>
+        <h2>{{ jumlah_provinsi }}</h2>
+        <small>Cakupan wilayah</small>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">◷</div>
+        <span>Riwayat Prediksi</span>
+        <h2>{{ jumlah_riwayat }}</h2>
+        <small>Prediksi tersimpan</small>
+    </div>
+
+</div>
+
+
+<!-- RINGKASAN DATASET -->
+<div class="section-heading">
+    <div>
+        <span class="eyebrow">DATA OVERVIEW</span>
+        <h2>Ringkasan Dataset</h2>
+        <p>
+            Gambaran umum konsumsi energi dan biaya pengisian
+            berdasarkan dataset kendaraan listrik.
+        </p>
+    </div>
+</div>
+
+<div class="stats-grid two">
+
+    <div class="stat-card highlight">
+        <div class="stat-icon blue">⚡</div>
+        <span>Rata-rata Konsumsi Energi</span>
+        <h2>{{ rata_energi }} <small>kWh</small></h2>
+        <p>Rata-rata energi yang digunakan.</p>
+    </div>
+
+    <div class="stat-card highlight">
+        <div class="stat-icon purple">Rp</div>
+        <span>Rata-rata Biaya Pengisian</span>
+        <h2>Rp {{ rata_biaya|floatformat:0 }}</h2>
+        <p>Rata-rata biaya pengisian kendaraan.</p>
+    </div>
+
+</div>
+
+
+<!-- GRAFIK -->
+<div class="section-heading">
+    <div>
+        <span class="eyebrow">MODEL VISUALIZATION</span>
+        <h2>Evaluasi Visual Model</h2>
+        <p>
+            Perbandingan nilai aktual dan prediksi pada
+            30 sampel data testing.
+        </p>
+    </div>
+</div>
+
+
+<!-- GRAFIK ENERGI -->
+<div class="panel regression-panel">
+
+    <div class="chart-title">
+        <div>
+            <h3>Konsumsi Energi Aktual vs Prediksi</h3>
+            <p>Model Linear Regression · Satuan kWh</p>
+        </div>
+
+        <span class="chart-label energy-label">
+            ⚡ ENERGI
+        </span>
+    </div>
+
+    <div class="regression-chart">
+        <canvas id="energiChart"></canvas>
+    </div>
+
+    <div class="chart-action">
+        <div>
+            <b>Ingin memahami grafik ini?</b>
+            <small>
+                Dapatkan penjelasan mengenai pola grafik dan
+                hasil evaluasi model.
+            </small>
+        </div>
+
+        <button
+            class="btn-primary"
+            type="button"
+            onclick="muatAnalisis('energi', this)"
+        >
+            ✦ Lihat Penjelasan
+        </button>
+    </div>
+
+    <div
+        id="analisis-energi"
+        class="analysis-result"
+        hidden
+        aria-live="polite"
+    ></div>
+
+</div>
+
+
+<!-- GRAFIK BIAYA -->
+<div class="panel regression-panel">
+
+    <div class="chart-title">
+        <div>
+            <h3>Biaya Pengisian Aktual vs Prediksi</h3>
+            <p>Model Linear Regression · Satuan Rupiah</p>
+        </div>
+
+        <span class="chart-label cost-label">
+            Rp BIAYA
+        </span>
+    </div>
+
+    <div class="regression-chart">
+        <canvas id="biayaChart"></canvas>
+    </div>
+
+    <div class="chart-action">
+        <div>
+            <b>Ingin memahami grafik ini?</b>
+            <small>
+                Dapatkan penjelasan mengenai pola grafik dan
+                hasil evaluasi model.
+            </small>
+        </div>
+
+        <button
+            class="btn-primary"
+            type="button"
+            onclick="muatAnalisis('biaya', this)"
+        >
+            ✦ Lihat Penjelasan
+        </button>
+    </div>
+
+    <div
+        id="analisis-biaya"
+        class="analysis-result"
+        hidden
+        aria-live="polite"
+    ></div>
+
+</div>
+
+
+<!-- EVALUASI MODEL -->
+<div class="section-heading">
+    <div>
+        <span class="eyebrow">MODEL PERFORMANCE</span>
+        <h2>Evaluasi Model</h2>
+        <p>
+            Ringkasan performa model berdasarkan data testing.
+        </p>
+    </div>
+</div>
+
+<div class="stats-grid two">
+
+    <div class="panel metric-panel">
+        <div class="metric-heading">
+            <span>Model Konsumsi Energi</span>
+            <span class="metric-icon">⚡</span>
+        </div>
+
+        <div class="metric">{{ r2_energi }}%</div>
+
+        <b>R² Score</b>
+
+        <div class="metric-details">
+            <div>
+                <span>MAE</span>
+                <strong>{{ mae_energi }} kWh</strong>
+            </div>
+
+            <div>
+                <span>RMSE</span>
+                <strong>{{ rmse_energi }} kWh</strong>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel metric-panel">
+        <div class="metric-heading">
+            <span>Model Biaya Pengisian</span>
+            <span class="metric-icon">Rp</span>
+        </div>
+
+        <div class="metric">{{ r2_biaya }}%</div>
+
+        <b>R² Score</b>
+
+        <div class="metric-details">
+            <div>
+                <span>MAE</span>
+                <strong>Rp {{ mae_biaya|floatformat:2 }}</strong>
+            </div>
+
+            <div>
+                <span>RMSE</span>
+                <strong>Rp {{ rmse_biaya|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- CATATAN -->
+<div class="notice">
+    <strong>Informasi:</strong>
+
+    Hasil prediksi DAYAKU merupakan estimasi berdasarkan
+    dataset dan model yang telah dilatih. Hasil dapat
+    berbeda dari kondisi pengisian sebenarnya dan bukan
+    merupakan tagihan resmi penyedia listrik.
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+const grafikEnergi = {{ grafik_energi|safe }};
+const grafikBiaya = {{ grafik_biaya|safe }};
+
+function formatAngka(nilai) {
+
+    return Number(nilai).toLocaleString('id-ID', {
+        maximumFractionDigits: 3
+    });
+
+}
+
+function buatGrafik(id, grafik, satuan) {
+
+    const canvas = document.getElementById(id);
+
+    if (!canvas || !grafik) {
+        return;
+    }
+
+    new Chart(canvas, {
+
+        type: 'line',
+
+        data: {
+
+            labels: grafik.label,
+
+            datasets: [
+
+                {
+                    label: 'Nilai Aktual',
+
+                    data: grafik.aktual,
+
+                    borderColor: '#3B82F6',
+
+                    backgroundColor: 'rgba(59, 130, 246, 0.10)',
+
+                    borderWidth: 3,
+
+                    pointRadius: 3,
+
+                    pointHoverRadius: 6,
+
+                    pointBackgroundColor: '#3B82F6',
+
+                    tension: 0.3,
+
+                    fill: false
+                },
+
+                {
+                    label: 'Nilai Prediksi',
+
+                    data: grafik.prediksi,
+
+                    borderColor: '#10B981',
+
+                    backgroundColor: 'rgba(16, 185, 129, 0.10)',
+
+                    borderWidth: 3,
+
+                    pointRadius: 3,
+
+                    pointHoverRadius: 6,
+
+                    pointBackgroundColor: '#10B981',
+
+                    tension: 0.3,
+
+                    fill: false
+                }
+
+            ]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+
+            animation: {
+                duration: 900,
+                easing: 'easeOutQuart'
+            },
+
+            plugins: {
+
+                legend: {
+
+                    position: 'bottom',
+
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 22,
+                        color: '#475569',
+                        font: {
+                            family: 'DM Sans',
+                            size: 12,
+                            weight: '600'
+                        }
+                    }
+
+                },
+
+                tooltip: {
+
+                    backgroundColor: '#172554',
+
+                    padding: 13,
+
+                    cornerRadius: 10,
+
+                    callbacks: {
+
+                        label: function(context) {
+
+                            return context.dataset.label +
+                                ': ' +
+                                formatAngka(context.raw) +
+                                ' ' +
+                                satuan;
+
+                        }
+
+                    }
+
+                }
+
+            },
+
+            scales: {
+
+                x: {
+
+                    grid: {
+                        display: false
+                    },
+
+                    title: {
+                        display: true,
+                        text: 'Urutan Sampel Data Testing',
+                        color: '#64748B',
+                        font: {
+                            weight: '600'
+                        }
+                    },
+
+                    ticks: {
+                        maxTicksLimit: 10,
+                        color: '#64748B'
+                    }
+
+                },
+
+                y: {
+
+                    beginAtZero: true,
+
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.15)'
+                    },
+
+                    title: {
+                        display: true,
+                        text: 'Nilai (' + satuan + ')',
+                        color: '#64748B',
+                        font: {
+                            weight: '600'
+                        }
+                    },
+
+                    ticks: {
+                        color: '#64748B'
+                    }
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+function tampilkanPenjelasan(panel, teks) {
+
+    panel.replaceChildren();
+
+    const bagian = teks
+        .replace(/\r\n/g, '\n')
+        .split(/\n\s*\n/)
+        .filter(item => item.trim());
+
+    bagian.forEach(item => {
+
+        const baris = item
+            .split('\n')
+            .filter(x => x.trim());
+
+        if (!baris.length) {
+            return;
+        }
+
+        const section = document.createElement('section');
+
+        section.className = 'analysis-section';
+
+        const heading = document.createElement('h4');
+
+        heading.textContent = baris[0]
+            .replace(/^\d+[\.\)]\s*/, '')
+            .replace(/\*\*/g, '')
+            .replace(/:$/, '')
+            .trim();
+
+        section.appendChild(heading);
+
+        const isi = baris.slice(1);
+
+        const daftar = isi.filter(
+            x => /^[•*\-]\s/.test(x.trim())
+        );
+
+        if (daftar.length > 0) {
+
+            const ul = document.createElement('ul');
+
+            isi.forEach(teksBaris => {
+
+                const li = document.createElement('li');
+
+                li.textContent = teksBaris
+                    .replace(/^[•*\-]\s*/, '')
+                    .replace(/\*\*/g, '')
+                    .trim();
+
+                ul.appendChild(li);
+
+            });
+
+            section.appendChild(ul);
+
+        } else if (isi.length > 0) {
+
+            const paragraf = document.createElement('p');
+
+            paragraf.textContent = isi
+                .join(' ')
+                .replace(/\*\*/g, '')
+                .trim();
+
+            section.appendChild(paragraf);
+
+        }
+
+        panel.appendChild(section);
+
+    });
+
+}
+
+async function muatAnalisis(jenis, tombol) {
+
+    const panel = document.getElementById(
+        'analisis-' + jenis
+    );
+
+    if (!panel) {
+        return;
+    }
+
+    const teksAwal = tombol.textContent;
+
+    tombol.disabled = true;
+
+    tombol.textContent = 'Menyiapkan penjelasan...';
+
+    panel.hidden = false;
+
+    panel.replaceChildren();
+
+    const loading = document.createElement('p');
+
+    loading.className = 'analysis-loading';
+
+    loading.textContent =
+        'Sedang menganalisis data grafik. Mohon tunggu...';
+
+    panel.appendChild(loading);
+
+    try {
+
+        const url = "{% url 'analisis_grafik' 'JENIS' %}"
+            .replace('JENIS', jenis);
+
+        const response = await fetch(url, {
+
+            method: 'POST',
+
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error || 'Penjelasan grafik gagal dimuat.'
+            );
+
+        }
+
+        tampilkanPenjelasan(
+            panel,
+            data.penjelasan
+        );
+
+    } catch (error) {
+
+        panel.replaceChildren();
+
+        const pesan = document.createElement('p');
+
+        pesan.className = 'analysis-error';
+
+        pesan.textContent = error.message;
+
+        panel.appendChild(pesan);
+
+    } finally {
+
+        tombol.disabled = false;
+
+        tombol.textContent = teksAwal;
+
+    }
+
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    buatGrafik(
+        'energiChart',
+        grafikEnergi,
+        'kWh'
+    );
+
+    buatGrafik(
+        'biayaChart',
+        grafikBiaya,
+        'Rupiah'
+    );
+
+});
+
+</script>
+
+{% endblock %}

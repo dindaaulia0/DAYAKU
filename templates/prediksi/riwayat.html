@@ -1,0 +1,204 @@
+{% extends 'prediksi/base.html' %}
+
+{% block title %}Riwayat Prediksi | DAYAKU{% endblock %}
+{% block page_heading %}Riwayat Prediksi{% endblock %}
+
+{% block content %}
+
+<div class="page-intro">
+    <span class="eyebrow">PREDICTION HISTORY</span>
+
+    <h1>Riwayat Prediksi</h1>
+
+    <p>
+        Semua hasil perhitungan prediksi yang berhasil
+        dilakukan tersimpan dan dapat dilihat kembali di sini.
+    </p>
+</div>
+
+
+<!-- RINGKASAN RIWAYAT -->
+<div class="history-summary">
+
+    <div class="history-info">
+        <span>Total Prediksi Tersimpan</span>
+
+        <strong>{{ jumlah_riwayat }}</strong>
+
+        <small>Seluruh prediksi yang pernah dilakukan</small>
+    </div>
+
+    <a href="{% url 'prediksi' %}" class="btn-primary">
+        ＋ Prediksi Baru
+    </a>
+
+</div>
+
+
+<!-- TABEL RIWAYAT -->
+<div class="panel table-panel">
+
+    <div class="table-heading">
+        <div>
+            <h3>Daftar Riwayat Prediksi</h3>
+            <p>Menampilkan hasil prediksi terbaru terlebih dahulu.</p>
+        </div>
+
+        <span class="chart-label">
+            {{ jumlah_riwayat }} DATA
+        </span>
+    </div>
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Tanggal</th>
+                    <th>Kapasitas</th>
+                    <th>SOC Awal</th>
+                    <th>SOC Akhir</th>
+                    <th>Jarak</th>
+                    <th>Suhu</th>
+                    <th>Durasi</th>
+                    <th>Energi</th>
+                    <th>Biaya</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in halaman %}
+
+                <tr>
+
+                    <td>
+                        {{ forloop.counter0|add:halaman.start_index }}
+                    </td>
+
+                    <td>
+                        {{ item.tanggal|date:'d M Y, H:i' }}
+                    </td>
+
+                    <td>
+                        {{ item.battery_capacity|floatformat:2 }} kWh
+                    </td>
+
+                    <td>
+                        {{ item.initial_soc|floatformat:1 }}%
+                    </td>
+
+                    <td>
+                        {{ item.final_soc|floatformat:1 }}%
+                    </td>
+
+                    <td>
+                        {{ item.daily_distance|floatformat:1 }} km
+                    </td>
+
+                    <td>
+                        {{ item.temperature|floatformat:1 }} °C
+                    </td>
+
+                    <td>
+                        {{ item.charging_duration|floatformat:1 }} menit
+                    </td>
+
+                    <td>
+                        <strong class="energy-value">
+                            {{ item.predicted_energy|floatformat:3 }} kWh
+                        </strong>
+                    </td>
+
+                    <td>
+                        <strong class="cost-value">
+                            Rp {{ item.predicted_cost|floatformat:0 }}
+                        </strong>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="10">
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">◷</div>
+
+                            <h3>Belum Ada Riwayat</h3>
+
+                            <p>
+                                Kamu belum memiliki riwayat prediksi.
+                                Silakan lakukan prediksi terlebih dahulu
+                                untuk melihat hasilnya di halaman ini.
+                            </p>
+
+                            <a href="{% url 'prediksi' %}" class="btn-primary">
+                                Mulai Prediksi
+                            </a>
+
+                        </div>
+
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+    {% if halaman.paginator.num_pages > 1 %}
+
+    <div class="pagination">
+
+        {% if halaman.has_previous %}
+
+        <a href="?page={{ halaman.previous_page_number }}">
+            ← Sebelumnya
+        </a>
+
+        {% else %}
+
+        <span class="pagination-disabled">
+            ← Sebelumnya
+        </span>
+
+        {% endif %}
+
+
+        <span>
+            Halaman {{ halaman.number }}
+            dari {{ halaman.paginator.num_pages }}
+        </span>
+
+
+        {% if halaman.has_next %}
+
+        <a href="?page={{ halaman.next_page_number }}">
+            Selanjutnya →
+        </a>
+
+        {% else %}
+
+        <span class="pagination-disabled">
+            Selanjutnya →
+        </span>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

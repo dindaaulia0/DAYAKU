@@ -1,0 +1,11 @@
+{% extends 'prediksi/base.html' %}
+{% load custom_filters %}
+{% block title %}Dataset | DAYAKU{% endblock %}
+{% block page_heading %}Dataset Kendaraan Listrik{% endblock %}
+{% block content %}
+<div class="page-intro"><span class="eyebrow">DATA EXPLORER</span><h1>Dataset DAYAKU</h1><p>Dataset yang digunakan sebagai dasar pelatihan model prediksi konsumsi energi dan biaya pengisian motor listrik.</p></div>
+<div class="stats-grid two"><div class="stat-card"><span>Total Baris Data</span><h2>{{ jumlah_data|floatformat:0 }}</h2><small>Seluruh catatan dataset</small></div><div class="stat-card"><span>Jumlah Kolom</span><h2>{{ jumlah_kolom }}</h2><small>Fitur dan target dataset</small></div></div>
+<div class="panel table-panel"><div class="chart-title"><div><h3>Pratinjau Dataset</h3><p>Menampilkan maksimal 1.000 baris pertama, 15 baris per halaman.</p></div><span class="chart-label">CSV DATA</span></div><div class="table-wrap"><table><thead><tr>{% for nama in kolom %}<th>{{ nama }}</th>{% endfor %}</tr></thead><tbody>{% for baris in halaman %}<tr>{% for nama in kolom %}<td>{{ baris|get_item:nama }}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="{{ jumlah_kolom }}" class="empty">Dataset belum memiliki data.</td></tr>{% endfor %}</tbody></table></div>
+{% if halaman.paginator.num_pages > 1 %}<div class="pagination">{% if halaman.has_previous %}<a href="?page={{ halaman.previous_page_number }}">← Sebelumnya</a>{% endif %}<span>Halaman {{ halaman.number }} dari {{ halaman.paginator.num_pages }}</span>{% if halaman.has_next %}<a href="?page={{ halaman.next_page_number }}">Selanjutnya →</a>{% endif %}</div>{% endif %}
+</div>
+{% endblock %}
